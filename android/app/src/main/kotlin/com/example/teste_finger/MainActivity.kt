@@ -1,10 +1,9 @@
 package com.example.teste_finger
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.util.Base64
 import androidx.annotation.NonNull
 import asia.kanopi.fingerscan.Fingerprint
 import asia.kanopi.fingerscan.Status
@@ -18,6 +17,7 @@ class MainActivity: FlutterActivity() {
 
     private val fingerprint: Fingerprint? = Fingerprint();
     val image: ByteArray? = null
+    var imageBity:  ByteArray? = null
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         GeneratedPluginRegistrant.registerWith(flutterEngine);
@@ -25,13 +25,14 @@ class MainActivity: FlutterActivity() {
             call,result ->
             if (call.method=="myNativeFunction"){
                 if (fingerprint != null) {
+                    imageBity = null;
                     fingerprint.scan(this, printHandler, updateHandler)
-                    result.success("Android");
-                }else{
-                    result.success("Android");
+                    result.success("Success");
                 }
-
+            }else if (call.method=="getPhotoArray"){
+                result.success(imageBity);
             }
+            
         }
     }
 
@@ -41,17 +42,19 @@ class MainActivity: FlutterActivity() {
             val image: ByteArray
             var errorMessage = "empty"
             val status: Int = msg.getData().getInt("status")
-            val intent = Intent()
-            intent.putExtra("status", status)
+//            val intent = Intent()
+//            intent.putExtra("status", status)
             if (status == Status.SUCCESS) {
-                image = msg.getData().getByteArray("img")
 
+                image = msg.getData().getByteArray("img")
+                imageBity = image
+                print(image)
             } else {
                 errorMessage = msg.getData().getString("errorMessage")
-                intent.putExtra("errorMessage", errorMessage)
+
             }
-            setResult(Activity.RESULT_OK, intent)
-            finish()
+
+//            finish()
         }
     }
 

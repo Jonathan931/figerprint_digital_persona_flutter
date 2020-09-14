@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -30,6 +32,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String base64Image;
   static const platform = const MethodChannel("MyChanel");
   String message = "No message from Native";
   // this method calls the native function
@@ -43,6 +46,20 @@ class _MyHomePageState extends State<MyHomePage> {
       print("error: " + e.details);
       messageFromNative = e.details;
     }
+
+    Future.delayed(Duration(seconds: 5), () async {
+      try {
+        final bytes = await platform.invokeMethod("getPhotoArray");
+        if (bytes != null) {
+          setState(() {
+            base64Image = base64Encode(bytes);
+            print(base64Image);
+          });
+        }
+
+        print(bytes);
+      } catch (err) {}
+    });
 
     setState(() {
       message = messageFromNative;
@@ -59,6 +76,11 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            base64Image != null
+                ? Container(
+                    child: Image.memory(base64Decode(base64Image)),
+                  )
+                : Container(),
             Text(message),
             RaisedButton(
                 child: Text('Call Native Function'), onPressed: callNative)
